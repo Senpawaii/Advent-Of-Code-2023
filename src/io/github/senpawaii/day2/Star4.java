@@ -3,70 +3,46 @@ package io.github.senpawaii.day2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 public class Star4 {
     public String solve() throws IOException {
-        // Read the input file
         String file = "src/io/github/senpawaii/day2/input.txt";
-
-        BufferedReader reader = new BufferedReader(new FileReader(file));
 
         int total = 0;
 
-        // Read until the end of the file
-        while (reader.ready()) {
-            String line = reader.readLine();
+        // Read the file and process each line
+        List<String> lines = Files.readAllLines(Path.of(file));
 
-            // Read the game number
-            String game = line.substring(0, line.indexOf(":"));
-            int gameID = Integer.parseInt(game.substring(game.indexOf(" ") + 1));
-
+        for (String line : lines) {
             // Read all game subsets of cubes that were revealed from the bag
-            List<String> stringList = Pattern.compile(";")
-                    .splitAsStream(line.substring(line.indexOf(":") + 1))
-                    .toList();
+            List<String> stringList = List.of(line.substring(line.indexOf(":") + 1).split(";"));
 
+            Map<String, Integer> minimums = new HashMap<>();
+            minimums.put("red", 0);
+            minimums.put("green", 0);
+            minimums.put("blue", 0);
 
-            int minimumRed = 0;
-            int minimumGreen = 0;
-            int minimumBlue = 0;
-
-            // Check if each subset of cubes is a valid subset
             for (String string: stringList) {
                 // Read the subset of cubes
-                List<String> cubes = Pattern.compile(",")
-                        .splitAsStream(string)
-                        .toList();
+                List<String> cubes = List.of(string.split(","));
 
                 for (String cubeColor: cubes) {
-                    // Check if the cube rule is valid for each color
+                    String color = cubeColor.split(" ")[2];
                     int cubeNumber = Integer.parseInt(cubeColor.split(" ")[1]);
-                    if (cubeColor.contains("green")) {
-                        if (cubeNumber > minimumGreen) {
-                            minimumGreen = cubeNumber;
-                        }
-                    }
-
-                    if (cubeColor.contains("red")) {
-                        if (cubeNumber > minimumRed) {
-                            minimumRed = cubeNumber;
-                        }
-                    }
-                    if (cubeColor.contains("blue")) {
-                        if (cubeNumber > minimumBlue) {
-                            minimumBlue = cubeNumber;
-                        }
+                    if (minimums.containsKey(color)) {
+                        minimums.put(color, Math.max(minimums.get(color), cubeNumber));
                     }
                 }
             }
-            int power = minimumBlue * minimumGreen * minimumRed;
+            int power = minimums.get("blue") * minimums.get("green") * minimums.get("red");
             total += power;
         }
 
-        reader.close();
         return String.valueOf(total);
     }
 }
